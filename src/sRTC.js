@@ -28,6 +28,12 @@ sRTC = {
 		onicegatheringstatechange:[function(state) {
 			console.info('ice gathering state change:', state);
 		}],
+		messageReceived:[function(m){
+			console.log(m);
+		}],
+		channelConnected:[function(){
+			console.log('Channel connected!')
+		}],
 		onaddstream:[function(e) {
 			console.log("Error: addstream feature not supported");;
 		}],
@@ -58,6 +64,9 @@ sRTC = {
 		localOfferFailed:[function(){
 			console.log('Creation of local offer failed!')
 		}],
+		datachannelCreated:[function(pc){
+			console.log("Received datachannel (" + pc + ")");
+		}],
 		onerror:[function(e) {
 			switch (e.type) {
 				case 'file':
@@ -68,28 +77,28 @@ sRTC = {
 		ondatachannel:[function(e) {
 			var datachannel = e.channel || e; // Chrome sends event, FF sends raw channel
 			sRTC.dc2 = datachannel;
-			var activedc = sRTC.dc2;
-			sRTC.dc2.onopen = function (e) {
-				console.log('data channel connect');
-				$('#waitForConnection').remove();
-			}
+			sRTC.activedc = sRTC.dc2;
+			sRTC.handle("datachannelCreated")('pc2');
+			sRTC.dc2.onopen = sRTC.handle('channelConnected');
 			sRTC.dc2.onmessage = function (e) {
-				var data = JSON.parse(e.data);
-				console.log("recieved: "+ data.message);
-				// Scroll chat text area to the bottom on new input.
+				if (e.data.size) {
+					sRTC.handle('onerror')('file');
+				} else {
+					var data = JSON.parse(e.data);
+					if (data.type == 'file') {
+						sRTC.handle('onerror')('file');
+					} else {
+						sRTC.handle('messageReceived')(data.message);
+					}
+					// Scroll chat text area to the bottom on new input.
+				}
 			};
 		}],
 
 	},
-	handshake: {
-		handleAnswerFromPC2:function() {
-
-		}
-	}
 	addEventListener:function(evt, fn) {
 		sRTC.handlers[evt].push(fn);
 	},
- 
 	removeEventListener:function(evt, fn) { // can probably do this better
 		for (var i = 0; i < sRTC.handlers.length; i++) {
 			if (sRTC.handlers[i] == fn) {
@@ -103,10 +112,8 @@ sRTC = {
 			sRTC.dc1 = sRTC.pc1.createDataChannel('test', {reliable:true});
 			sRTC.activedc = sRTC.dc1;
 			console.log('Created datachannel (pc1)');
-			sRTC.dc1.onopen = function(e) {
-				console.log('Data channel connected');
-			}
-
+			sRTC.handle("datachannelCreated")('pc1');
+			sRTC.dc1.onopen = sRTC.handle('channelConnected');
 			sRTC.dc1.onmessage = function(e) {
 				console.log('Received message (pc1)', e.data);
 				if (e.data.size) {
@@ -120,7 +127,7 @@ sRTC = {
 					console.log(e);
 					var data = JSON.parse(e.data);
 					if (data.type == 'file') {
-						sRTC.handle('error')('file');
+						sRTC.handle('onerror')('file');
 					} else {
 						sRTC.handle('onreceiveJSON')(data);
 					}
