@@ -137,10 +137,10 @@ window.sRTC = {
 		}
 	},
 	handleOfferFromPC1:function(offerDesc){
-		sRTC.pc2.setRemoteDescription(new RTCSessionDescription(offerDesc.sdp));
+		sRTC.pc2.setRemoteDescription(new RTCSessionDescription(offerDesc));
 		sRTC.pc2.createAnswer(function (answerDesc) {
 			console.log("Created local answer: ", answerDesc);
-			sRTC.pc2.setLocalDescription(new RTCSessionDescription(answerDesc.sdp));
+			sRTC.pc2.setLocalDescription(new RTCSessionDescription(answerDesc));
 		}, function () { console.warn("No create answer"); });
 	},
 	createLocalOffer:function() {
@@ -160,7 +160,7 @@ window.sRTC = {
 	},
 	handleAnswerFromPC2:function(answerDesc) {
 		console.log("Received remote answer: ", answerDesc);
-		sRTC.pc1.setRemoteDescription(new RTCSessionDescription(answerDesc.sdp));
+		sRTC.pc1.setRemoteDescription(new RTCSessionDescription(answerDesc));
 	},
 	init:function() {
 		sRTC.pc1 = new RTCPeerConnection(sRTC.cfg, sRTC.con);
