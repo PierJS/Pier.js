@@ -12,14 +12,14 @@ sRTC = {
 	},
 	setupDC1:function() {
 		try {
-			dc1 = pc1.createDataChannel('test', {reliable:true});
-			activedc = dc1;
+			sRTC.dc1 = sRTC.pc1.createDataChannel('test', {reliable:true});
+			sRTC.activedc = sRTC.dc1;
 			console.log('Created datachannel (pc1)');
-			dc1.onopen = function(e) {
+			sRTC.dc1.onopen = function(e) {
 				console.log('Data channel connected');
 			}
 
-			dc1.onmessage = function(e) {
+			sRTC.dc1.onmessage = function(e) {
 				console.log('Received message (pc1)', e.data);
 				if (e.data.size) {
 					sRTC.handleError('file');
@@ -52,7 +52,31 @@ sRTC = {
 		}
 	},
 	createLocalOffer:function() {
-
+		sRTC.setupDC1()
+		sRTC.pc1.createOffer(function(desc) {
+			sRTC.setLocalDescription(desc, function(){});
+			console.log("Created local offer", desc);
+		}, function() {
+			console.warn("Couldn't create offer");
+		})
 	},
-	
+	handleOnConnection:function(){
+		console.log("Connected to datachannel!");
+	},
+	init:function() {
+		sRTC.pc1.onicecandidate = function(e){
+			console.log('ICE candidate (pc1)', e);
+		}
+
+		sRTC.pc1.onconnection = sRTC.handleOnConnection;
+	}
+	onsignalingstatechange:function(state) {
+		console.info('signaling state change:', state);
+	},
+	oniceconnectionstatechange:function(state) {
+		console.info('ice connection state change:', state);
+	},
+	onicegatheringstatechange:function(state) {
+		console.info('ice gathering state change:', state);
+	}
 }
