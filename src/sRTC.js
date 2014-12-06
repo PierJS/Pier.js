@@ -25,8 +25,26 @@ sRTC = {
 		onicegatheringstatechange:[function(state) {
 			console.info('ice gathering state change:', state);
 		}],
-		onicecandidate:[function(e){
+		onaddstream:[function(e) {
+			console.log("Error: addstream feature not supported");;
+		}],
+		onicecandidate_pc1:[function(e){
 			console.log('ICE candidate (pc1)', e);
+			if (e.candidate == null) {
+				sRTC.handle('pc1LocalDescNeeded')(pc1.localDescription);
+			}
+		}],
+		onicecandidate_pc2:[function (e){
+			console.log("ICE candidate (pc2)", e);
+			if (e.candidate == null) {
+				sRTC.handle('pc2LocalDescNeeded')(pc2.localDescription);
+			}
+		}],
+		pc2LocalDescNeeded:[function(localDesc) {
+			console.log("Local description: ", localDesc);
+		}],
+		pc2LocalDescNeeded:[function(localDesc) {
+			console.log("Local description: ", localDesc);
 		}],
 		onconnection:[function(){
 			console.log("Connected to datachannel!");
@@ -113,10 +131,11 @@ sRTC = {
 		sRTC.pc1.setRemoteDescription(answerDesc);
 	}
 	init:function() {
-		sRTC.pc1.onicecandidate = sRTC.handle('onicecandidate');
+		sRTC.pc1.onicecandidate = sRTC.handle('onicecandidate_pc1');
 		sRTC.pc1.onconnection = sRTC.handle('onconnection');
 		sRTC.pc1.onsignalingstatechange = sRTC.handle('onsignalingstatechange');
 		sRTC.pc1.oniceconnectionstatechange = sRTC.handle('oniceconnectionstatechange');
 		sRTC.pc1.onicegatheringstatechange = sRTC.handle('onicegatheringstatechange');
+		sRTC.pc2.onicecandidate = sRTC.handle('onicecandidate_pc2');
 	}
 }
