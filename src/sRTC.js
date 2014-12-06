@@ -6,6 +6,7 @@ window.sRTC = {
 	tn1:null,
 	tn2:null,
 	handle:function(evt, params) {
+		console.log(evt);
 		return function(a,b,c) {
 			for (var i = 0; i < sRTC.handlers[evt].length; i++) {
 				sRTC.handlers[evt][i](a,b,c);
@@ -38,16 +39,16 @@ window.sRTC = {
 		onicecandidate_pc1:[function(e){
 			console.log('ICE candidate (pc1)', e);
 			if (e.candidate == null) {
-				sRTC.handle('pc1LocalDescNeeded')(pc1.localDescription);
+				sRTC.handle('pc1LocalDescNeeded')(sRTC.pc1.localDescription);
 			}
 		}],
 		onicecandidate_pc2:[function (e){
 			console.log("ICE candidate (pc2)", e);
 			if (e.candidate == null) {
-				sRTC.handle('pc2LocalDescNeeded')(pc2.localDescription);
+				sRTC.handle('pc2LocalDescNeeded')(sRTC.pc2.localDescription);
 			}
 		}],
-		pc2LocalDescNeeded:[function(localDesc) {
+		pc1LocalDescNeeded:[function(localDesc) {
 			console.log("Local description: ", localDesc);
 		}],
 		pc2LocalDescNeeded:[function(localDesc) {
@@ -145,7 +146,7 @@ window.sRTC = {
 	createLocalOffer:function() {
 		sRTC.setupDC1()
 		sRTC.pc1.createOffer(function(desc) {
-			sRTC.setLocalDescription(desc, function(){});
+			sRTC.pc1.setLocalDescription(desc, function(){});
 			console.log("Created local offer", desc);
 			sRTC.handle('localOfferCreated')(desc);
 		}, function() {
@@ -175,3 +176,5 @@ window.sRTC = {
 		sRTC.pc2.onicegatheringstatechange = sRTC.handle('onicegatheringstatechange');
 	}
 }
+
+sRTC.init();
