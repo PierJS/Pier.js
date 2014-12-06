@@ -2,7 +2,9 @@ sRTC = {
 	cfg:{'iceServers':[{'url':'stun:23.21.150.121'}]},
 	con:{'optional': [{'DtlsSrtpKeyAgreement': true}]},
 	pc1:new RTCPeerConnection(sRTC.cfg, sRTC.con),
+	pc2:new RTCPeerConnection(sRTC.cfg, sRTC.con),
 	dc1:null,
+	dc2:null,
 	tn1:null,
 	handle:function(evt, params) {
 		return function(a,b,c) {
@@ -34,11 +36,27 @@ sRTC = {
 					console.error('Protocol doesn\'t support file sending/receiving!');
 					break;
 			}
-		}]
+		}],
+                ondatachannel:[function(e) {
+                    var datachannel = e.channel || e; // Chrome sends event, FF sends raw channel
+                    SRTC.dc2 = datachannel;
+                    var activedc = SRTC.dc2;
+                    SRTC.dc2.onopen = function (e) {
+                        console.log('data channel connect');
+                        $('#waitForConnection').remove();
+                    }
+                    SRTC.dc2.onmessage = function (e) {
+                        var data = JSON.parse(e.data);
+                        console.log("recieved: "+ data.message);
+                        // Scroll chat text area to the bottom on new input.
+                    };
+                }],
+
 	},
 	addEventListener:function(evt, fn) {
 		sRTC.handlers[evt].push(fn);
 	},
+ 
 	removeEventListener:function(evt, fn) { // can probably do this better
 		for (var i = 0; i < sRTC.handlers.length; i++) {
 			if (sRTC.handlers[i] == fn) {
@@ -79,6 +97,13 @@ sRTC = {
 			console.warn("No data channel (pc1)", e);
 		}
 	},
+        handleOfferFromPC1:function(offerDesc){
+                SRTC.pc2.setRemoteDescription(offerDesc);
+                SRTC.pc2.createAnswer(function (answerDesc) {
+                    console.log("Created local answer: ", answerDesc);
+                    SRTC.pc2.setLocalDescription(answerDesc);
+                }, function () { console.warn("No create answer"); });
+        },
 	createLocalOffer:function() {
 		sRTC.setupDC1()
 		sRTC.pc1.createOffer(function(desc) {
@@ -92,7 +117,7 @@ sRTC = {
 		sRTC.pc1.onicecandidate = function(e){
 			console.log('ICE candidate (pc1)', e);
 		}
-
+                
 		sRTC.pc1.onconnection = function() {};
 	}
 }
