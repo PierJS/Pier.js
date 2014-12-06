@@ -1,8 +1,6 @@
-sRTC = {
+window.sRTC = {
 	cfg:{'iceServers':[{'url':'stun:23.21.150.121'}]},
 	con:{'optional': [{'DtlsSrtpKeyAgreement': true}]},
-	pc1:new RTCPeerConnection(sRTC.cfg, sRTC.con),
-	pc2:new RTCPeerConnection(sRTC.cfg, sRTC.con),
 	dc1:null,
 	dc2:null,
 	tn1:null,
@@ -13,7 +11,7 @@ sRTC = {
 				sRTC.handlers[evt][i](a,b,c);
 			}
 		}
-	}
+	},
 	handlers: {
 		onreceiveJSON:[function(json) {
 			console.log('Message received!');
@@ -162,8 +160,10 @@ sRTC = {
 	handleAnswerFromPC2:function(answerDesc) {
 		console.log("Received remote answer: ", answerDesc);
 		sRTC.pc1.setRemoteDescription(answerDesc);
-	}
+	},
 	init:function() {
+		sRTC.pc1 = new RTCPeerConnection(sRTC.cfg, sRTC.con);
+		sRTC.pc2 = new RTCPeerConnection(sRTC.cfg, sRTC.con);
 		sRTC.pc1.onicecandidate = sRTC.handle('onicecandidate_pc1');
 		sRTC.pc1.onconnection = sRTC.handle('onconnection');
 		sRTC.pc1.onsignalingstatechange = sRTC.handle('onsignalingstatechange');

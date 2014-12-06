@@ -87,3 +87,8 @@ if (navigator.mozGetUserMedia) {
 } else {
   console.log("Browser does not appear to be WebRTC-capable");
 }
+
+RTCPeerConnection = function(a, b) {
+  debugger
+  console.log(a, b);
+}
