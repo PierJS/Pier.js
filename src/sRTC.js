@@ -27,8 +27,17 @@ sRTC = {
 		onicegatheringstatechange:[function(state) {
 			console.info('ice gathering state change:', state);
 		}],
+		onicecandidate:[function(e){
+			console.log('ICE candidate (pc1)', e);
+		}],
 		onconnection:[function(){
 			console.log("Connected to datachannel!");
+		}],
+		localOfferCreated:[function(a){
+			console.log('Created offer: ', a)
+		}],
+		localOfferFailed:[function(){
+			console.log('Creation of local offer failed!')
 		}],
 		onerror:[function(e) {
 			switch (e.type) {
@@ -53,6 +62,11 @@ sRTC = {
                 }],
 
 	},
+	handshake: {
+		handleAnswerFromPC2:function() {
+
+		}
+	}
 	addEventListener:function(evt, fn) {
 		sRTC.handlers[evt].push(fn);
 	},
@@ -87,7 +101,7 @@ sRTC = {
 					console.log(e);
 					var data = JSON.parse(e.data);
 					if (data.type == 'file') {
-						sRTC.handleError('file');
+						sRTC.handle('error')('file');
 					} else {
 						sRTC.handle('onreceiveJSON')(data);
 					}
@@ -109,15 +123,25 @@ sRTC = {
 		sRTC.pc1.createOffer(function(desc) {
 			sRTC.setLocalDescription(desc, function(){});
 			console.log("Created local offer", desc);
+			sRTC.handle('localOfferCreated')(desc);
 		}, function() {
 			console.warn("Couldn't create offer");
+			sRTC.handle('localOfferFailed')();
 		})
 	},
+	answerFromClientReceived:function(answerJSO) {
+		var answerDesc = new RTCSessionDescription(answerJSO);
+		sRTC.handleAnswerFromPC2(answerDesc);
+	},
+	handleAnswerFromPC2:function(answerDesc) {
+		console.log("Received remote answer: ", answerDesc);
+		sRTC.pc1.setRemoteDescription(answerDesc);
+	}
 	init:function() {
-		sRTC.pc1.onicecandidate = function(e){
-			console.log('ICE candidate (pc1)', e);
-		}
-                
-		sRTC.pc1.onconnection = function() {};
+		sRTC.pc1.onicecandidate = sRTC.handle('onicecandidate');
+		sRTC.pc1.onconnection = sRTC.handle('onconnection');
+		sRTC.pc1.onsignalingstatechange = sRTC.handle('onsignalingstatechange');
+		sRTC.pc1.oniceconnectionstatechange = sRTC.handle('oniceconnectionstatechange');
+		sRTC.pc1.onicegatheringstatechange = sRTC.handle('onicegatheringstatechange');
 	}
 }
