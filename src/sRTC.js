@@ -48,13 +48,13 @@ sRTC = {
 		}],
                 ondatachannel:[function(e) {
                     var datachannel = e.channel || e; // Chrome sends event, FF sends raw channel
-                    SRTC.dc2 = datachannel;
-                    var activedc = SRTC.dc2;
-                    SRTC.dc2.onopen = function (e) {
+                    sRTC.dc2 = datachannel;
+                    var activedc = sRTC.dc2;
+                    sRTC.dc2.onopen = function (e) {
                         console.log('data channel connect');
                         $('#waitForConnection').remove();
                     }
-                    SRTC.dc2.onmessage = function (e) {
+                    sRTC.dc2.onmessage = function (e) {
                         var data = JSON.parse(e.data);
                         console.log("recieved: "+ data.message);
                         // Scroll chat text area to the bottom on new input.
@@ -112,10 +112,10 @@ sRTC = {
 		}
 	},
         handleOfferFromPC1:function(offerDesc){
-                SRTC.pc2.setRemoteDescription(offerDesc);
-                SRTC.pc2.createAnswer(function (answerDesc) {
+                sRTC.pc2.setRemoteDescription(offerDesc);
+                sRTC.pc2.createAnswer(function (answerDesc) {
                     console.log("Created local answer: ", answerDesc);
-                    SRTC.pc2.setLocalDescription(answerDesc);
+                    sRTC.pc2.setLocalDescription(answerDesc);
                 }, function () { console.warn("No create answer"); });
         },
 	createLocalOffer:function() {
@@ -143,5 +143,11 @@ sRTC = {
 		sRTC.pc1.onsignalingstatechange = sRTC.handle('onsignalingstatechange');
 		sRTC.pc1.oniceconnectionstatechange = sRTC.handle('oniceconnectionstatechange');
 		sRTC.pc1.onicegatheringstatechange = sRTC.handle('onicegatheringstatechange');
+                sRTC.pc2.onsignalingstatechange = sRTC.handle('onsignalingstatechange');
+		sRTC.pc2.oniceconnectionstatechange = sRTC.handle('oniceconnectionstatechange');
+		sRTC.pc2.onicegatheringstatechange = sRTC.handle('onicegatheringstatechange');
+
+
+
 	}
 }
