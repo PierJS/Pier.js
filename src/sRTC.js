@@ -31,6 +31,12 @@ sRTC = {
 		onconnection:[function(){
 			console.log("Connected to datachannel!");
 		}],
+		localOfferCreated:[function(a){
+			console.log('Created offer: ', a)
+		}],
+		localOfferFailed:[function(){
+			console.log('Creation of local offer failed!')
+		}],
 		onerror:[function(e) {
 			switch (e.type) {
 				case 'file':
@@ -92,15 +98,20 @@ sRTC = {
 		sRTC.pc1.createOffer(function(desc) {
 			sRTC.setLocalDescription(desc, function(){});
 			console.log("Created local offer", desc);
+			sRTC.handle('localOfferCreated')(desc);
 		}, function() {
 			console.warn("Couldn't create offer");
+			sRTC.handle('localOfferFailed')();
 		})
 	},
 	answerFromClientReceived:function(answerJSO) {
 		var answerDesc = new RTCSessionDescription(answerJSO);
 		sRTC.handleAnswerFromPC2(answerDesc);
-		// wait for 
 	},
+	handleAnswerFromPC2:function(answerDesc) {
+		console.log("Received remote answer: ", answerDesc);
+		sRTC.pc1.setRemoteDescription(answerDesc);
+	}
 	init:function() {
 		sRTC.pc1.onicecandidate = sRTC.handle('onicecandidate');
 		sRTC.pc1.onconnection = sRTC.handle('onconnection');
