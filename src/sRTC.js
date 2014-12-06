@@ -4,6 +4,12 @@ sRTC = {
 	pc1:new RTCPeerConnection(sRTC.cfg, sRTC.con),
 	dc1:null,
 	tn1:null,
+	handlers: {
+		onReceiveJSON:[function(json) {
+			console.log('Message received!');
+			console.log(json);
+		}]
+	},
 	setupDC1:function() {
 		try {
 			dc1 = pc1.createDataChannel('test', {reliable:true});
@@ -27,9 +33,15 @@ sRTC = {
 					var data = JSON.parse(e.data);
 					if (data.type == 'file') {
 						sRTC.handleError('file');
+					} else {
+						for (var i = 0; i < sRTC.handlers.onReceiveJSON) {
+							sRTC.handlers.onReceiveJSON[i](data);
+						}
 					}
 				}
 			}
+		} catch (e) {
+			console.warn("No data channel (pc1)", e);
 		}
 	},
 	handleError:function(e) {
@@ -38,5 +50,9 @@ sRTC = {
 				console.error('Protocol doesn\'t support file sending/receiving!');
 				break;
 		}
-	}
+	},
+	createLocalOffer:function() {
+
+	},
+	
 }
