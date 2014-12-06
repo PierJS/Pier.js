@@ -25,6 +25,9 @@ sRTC = {
 		onicegatheringstatechange:[function(state) {
 			console.info('ice gathering state change:', state);
 		}],
+		onicecandidate:[function(e){
+			console.log('ICE candidate (pc1)', e);
+		}],
 		onconnection:[function(){
 			console.log("Connected to datachannel!");
 		}],
@@ -36,6 +39,11 @@ sRTC = {
 			}
 		}]
 	},
+	handshake: {
+		handleAnswerFromPC2:function() {
+
+		}
+	}
 	addEventListener:function(evt, fn) {
 		sRTC.handlers[evt].push(fn);
 	},
@@ -69,7 +77,7 @@ sRTC = {
 					console.log(e);
 					var data = JSON.parse(e.data);
 					if (data.type == 'file') {
-						sRTC.handleError('file');
+						sRTC.handle('error')('file');
 					} else {
 						sRTC.handle('onreceiveJSON')(data);
 					}
@@ -88,11 +96,16 @@ sRTC = {
 			console.warn("Couldn't create offer");
 		})
 	},
+	answerFromClientReceived:function(answerJSO) {
+		var answerDesc = new RTCSessionDescription(answerJSO);
+		sRTC.handleAnswerFromPC2(answerDesc);
+		// wait for 
+	},
 	init:function() {
-		sRTC.pc1.onicecandidate = function(e){
-			console.log('ICE candidate (pc1)', e);
-		}
-
-		sRTC.pc1.onconnection = function() {};
+		sRTC.pc1.onicecandidate = sRTC.handle('onicecandidate');
+		sRTC.pc1.onconnection = sRTC.handle('onconnection');
+		sRTC.pc1.onsignalingstatechange = sRTC.handle('onsignalingstatechange');
+		sRTC.pc1.oniceconnectionstatechange = sRTC.handle('oniceconnectionstatechange');
+		sRTC.pc1.onicegatheringstatechange = sRTC.handle('onicegatheringstatechange');
 	}
 }
