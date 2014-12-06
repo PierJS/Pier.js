@@ -4,11 +4,48 @@ sRTC = {
 	pc1:new RTCPeerConnection(sRTC.cfg, sRTC.con),
 	dc1:null,
 	tn1:null,
+	handle:function(evt, params) {
+		return function(a,b,c) {
+			for (var i = 0; i < sRTC.handlers[evt].length; i++) {
+				sRTC.handlers[evt][i](a,b,c);
+			}
+		}
+	}
 	handlers: {
-		onReceiveJSON:[function(json) {
+		onreceiveJSON:[function(json) {
 			console.log('Message received!');
 			console.log(json);
+		}],
+		onsignalingstatechange:[function(state) {
+			console.info('signaling state change:', state);
+		}],
+		oniceconnectionstatechange:[function(state) {
+			console.info('ice connection state change:', state);
+		}],
+		onicegatheringstatechange:[function(state) {
+			console.info('ice gathering state change:', state);
+		}],
+		onconnection:[function(){
+			console.log("Connected to datachannel!");
+		}],
+		onerror:[function(e) {
+			switch (e.type) {
+				case 'file':
+					console.error('Protocol doesn\'t support file sending/receiving!');
+					break;
+			}
 		}]
+	},
+	addEventListener:function(evt, fn) {
+		sRTC.handlers[evt].push(fn);
+	},
+	removeEventListener:function(evt, fn) { // can probably do this better
+		for (var i = 0; i < sRTC.handlers.length; i++) {
+			if (sRTC.handlers[i] == fn) {
+				sRTC.splice(i, 1);
+				return;
+			}
+		}
 	},
 	setupDC1:function() {
 		try {
@@ -22,7 +59,7 @@ sRTC = {
 			sRTC.dc1.onmessage = function(e) {
 				console.log('Received message (pc1)', e.data);
 				if (e.data.size) {
-					sRTC.handleError('file');
+					sRTC.handle('onerror')('file');
 				} else {
 					if (e.data.charCodeAt(0) == 2) {
 						// The first message received from FireFox is literal ASCII 2, we don't bother using this message.
@@ -34,21 +71,12 @@ sRTC = {
 					if (data.type == 'file') {
 						sRTC.handleError('file');
 					} else {
-						for (var i = 0; i < sRTC.handlers.onReceiveJSON) {
-							sRTC.handlers.onReceiveJSON[i](data);
-						}
+						sRTC.handle('onreceiveJSON')(data);
 					}
 				}
 			}
 		} catch (e) {
 			console.warn("No data channel (pc1)", e);
-		}
-	},
-	handleError:function(e) {
-		switch (e.type) {
-			case 'file':
-				console.error('Protocol doesn\'t support file sending/receiving!');
-				break;
 		}
 	},
 	createLocalOffer:function() {
@@ -60,23 +88,11 @@ sRTC = {
 			console.warn("Couldn't create offer");
 		})
 	},
-	handleOnConnection:function(){
-		console.log("Connected to datachannel!");
-	},
 	init:function() {
 		sRTC.pc1.onicecandidate = function(e){
 			console.log('ICE candidate (pc1)', e);
 		}
 
-		sRTC.pc1.onconnection = sRTC.handleOnConnection;
-	}
-	onsignalingstatechange:function(state) {
-		console.info('signaling state change:', state);
-	},
-	oniceconnectionstatechange:function(state) {
-		console.info('ice connection state change:', state);
-	},
-	onicegatheringstatechange:function(state) {
-		console.info('ice gathering state change:', state);
+		sRTC.pc1.onconnection = function() {};
 	}
 }
