@@ -6,12 +6,14 @@ window.sRTC = {
 	tn1:null,
 	tn2:null,
 	log:function(a, b, c, d) { // this is really dirty
-		if (d) {
-			console[a](b, c, d);
-		} else if (c) {
-			console[a](b, c);
-		} else {
-			console[a](b);
+		if (this.debug) {
+			if (d) {
+				console[a](b, c, d);
+			} else if (c) {
+				console[a](b, c);
+			} else {
+				console[a](b);
+			}
 		}
 	},
 	handle:function(evt, params) {
@@ -174,7 +176,7 @@ window.sRTC = {
 		sRTC.log('log',"Received remote answer: ", answerDesc);
 		sRTC.pc1.setRemoteDescription(new RTCSessionDescription(answerDesc));
 	},
-	init:function() {
+	init:function(configs) {
 		sRTC.pc1 = new RTCPeerConnection(sRTC.cfg, sRTC.con);
 		sRTC.pc2 = new RTCPeerConnection(sRTC.cfg, sRTC.con);
 		sRTC.pc1.onicecandidate = sRTC.handle('onicecandidate_pc1');
@@ -187,6 +189,12 @@ window.sRTC = {
 		sRTC.pc2.oniceconnectionstatechange = sRTC.handle('oniceconnectionstatechange');
 		sRTC.pc2.onicegatheringstatechange = sRTC.handle('onicegatheringstatechange');
 		sRTC.pc2.ondatachannel = sRTC.handle('ondatachannel');
+
+		// configs
+		this.debug = false;
+		for (var i in configs) {
+			this[i] = configs[i];
+		}
 	}
 }
 
