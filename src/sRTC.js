@@ -5,71 +5,83 @@ window.sRTC = {
 	dc2:null,
 	tn1:null,
 	tn2:null,
+	log:function(a, b, c, d) { // this is really dirty
+		if (d) {
+			console[a](b, c, d);
+		} else if (c) {
+			console[a](b, c);
+		} else {
+			console[a](b);
+		}
+	},
 	handle:function(evt, params) {
-		console.log(evt);
+		sRTC.log('log',evt);
 		return function(a,b,c) {
 			for (var i = 0; i < sRTC.handlers[evt].length; i++) {
 				sRTC.handlers[evt][i](a,b,c);
 			}
 		}
 	},
+	sendJSON:function(JSO){
+		sRTC.activedc.send(JSON.stringify(JSO));
+	},
 	handlers: {
 		onreceiveJSON:[function(json) {
-			console.log('Message received!');
-			console.log(json);
+			sRTC.log('log','Message received!');
+			sRTC.log('log',json);
 		}],
 		onsignalingstatechange:[function(state) {
-			console.info('signaling state change:', state);
+			sRTC.log('info','signaling state change:', state);
 		}],
 		oniceconnectionstatechange:[function(state) {
-			console.info('ice connection state change:', state);
+			sRTC.log('info','ice connection state change:', state);
 		}],
 		onicegatheringstatechange:[function(state) {
-			console.info('ice gathering state change:', state);
+			sRTC.log('info','ice gathering state change:', state);
 		}],
 		messageReceived:[function(m){
-			console.log(m);
+			sRTC.log('log',m);
 		}],
 		channelConnected:[function(){
-			console.log('Channel connected!')
+			sRTC.log('log','Channel connected!')
 		}],
 		onaddstream:[function(e) {
-			console.log("Error: addstream feature not supported");;
+			sRTC.log('log',"Error: addstream feature not supported");;
 		}],
 		onicecandidate_pc1:[function(e){
-			console.log('ICE candidate (pc1)', e);
+			sRTC.log('log','ICE candidate (pc1)', e);
 			if (e.candidate == null) {
 				sRTC.handle('pc1LocalDescNeeded')(sRTC.pc1.localDescription);
 			}
 		}],
 		onicecandidate_pc2:[function (e){
-			console.log("ICE candidate (pc2)", e);
+			sRTC.log('log',"ICE candidate (pc2)", e);
 			if (e.candidate == null) {
 				sRTC.handle('pc2LocalDescNeeded')(sRTC.pc2.localDescription);
 			}
 		}],
 		pc1LocalDescNeeded:[function(localDesc) {
-			console.log("Local description: ", localDesc);
+			sRTC.log('log',"Local description: ", localDesc);
 		}],
 		pc2LocalDescNeeded:[function(localDesc) {
-			console.log("Local description: ", localDesc);
+			sRTC.log('log',"Local description: ", localDesc);
 		}],
 		onconnection:[function(){
-			console.log("Connected to datachannel!");
+			sRTC.log('log',"Connected to datachannel!");
 		}],
 		localOfferCreated:[function(a){
-			console.log('Created offer: ', a)
+			sRTC.log('log','Created offer: ', a)
 		}],
 		localOfferFailed:[function(){
-			console.log('Creation of local offer failed!')
+			sRTC.log('log','Creation of local offer failed!')
 		}],
 		datachannelCreated:[function(pc){
-			console.log("Received datachannel (" + pc + ")");
+			sRTC.log('log',"Received datachannel (" + pc + ")");
 		}],
 		onerror:[function(e) {
 			switch (e.type) {
 				case 'file':
-					console.error('Protocol doesn\'t support file sending/receiving!');
+					sRTC.log('error','Protocol doesn\'t support file sending/receiving!');
 					break;
 			}
 		}],
@@ -110,11 +122,11 @@ window.sRTC = {
 		try {
 			sRTC.dc1 = sRTC.pc1.createDataChannel('test', {reliable:true});
 			sRTC.activedc = sRTC.dc1;
-			console.log('Created datachannel (pc1)');
+			sRTC.log('log','Created datachannel (pc1)');
 			sRTC.handle("datachannelCreated")('pc1');
 			sRTC.dc1.onopen = sRTC.handle('channelConnected');
 			sRTC.dc1.onmessage = function(e) {
-				console.log('Received message (pc1)', e.data);
+				sRTC.log('log','Received message (pc1)', e.data);
 				if (e.data.size) {
 					sRTC.handle('onerror')('file');
 				} else {
@@ -123,7 +135,7 @@ window.sRTC = {
 						return;
 					}
 
-					console.log(e);
+					sRTC.log('log',e);
 					var data = JSON.parse(e.data);
 					if (data.type == 'file') {
 						sRTC.handle('onerror')('file');
@@ -133,24 +145,24 @@ window.sRTC = {
 				}
 			}
 		} catch (e) {
-			console.warn("No data channel (pc1)", e);
+			sRTC.log('warn',"No data channel (pc1)", e);
 		}
 	},
 	handleOfferFromPC1:function(offerDesc){
 		sRTC.pc2.setRemoteDescription(new RTCSessionDescription(offerDesc));
 		sRTC.pc2.createAnswer(function (answerDesc) {
-			console.log("Created local answer: ", answerDesc);
+			sRTC.log('log',"Created local answer: ", answerDesc);
 			sRTC.pc2.setLocalDescription(new RTCSessionDescription(answerDesc));
-		}, function () { console.warn("No create answer"); });
+		}, function () { sRTC.log('warn',"No create answer"); });
 	},
 	createLocalOffer:function() {
 		sRTC.setupDC1()
 		sRTC.pc1.createOffer(function(desc) {
 			sRTC.pc1.setLocalDescription(desc, function(){});
-			console.log("Created local offer", desc);
+			sRTC.log('log',"Created local offer", desc);
 			sRTC.handle('localOfferCreated')(desc);
 		}, function() {
-			console.warn("Couldn't create offer");
+			sRTC.log('warn',"Couldn't create offer");
 			sRTC.handle('localOfferFailed')();
 		})
 	},
@@ -159,7 +171,7 @@ window.sRTC = {
 		sRTC.handleAnswerFromPC2(answerDesc);
 	},
 	handleAnswerFromPC2:function(answerDesc) {
-		console.log("Received remote answer: ", answerDesc);
+		sRTC.log('log',"Received remote answer: ", answerDesc);
 		sRTC.pc1.setRemoteDescription(new RTCSessionDescription(answerDesc));
 	},
 	init:function() {
