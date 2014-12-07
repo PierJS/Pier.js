@@ -197,5 +197,3 @@ window.sRTC = {
 		}
 	}
 }
-
-sRTC.init();
