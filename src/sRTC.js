@@ -168,10 +168,6 @@ window.sRTC = {
 			sRTC.handle('localOfferFailed')();
 		})
 	},
-	answerFromClientReceived:function(answerJSO) { // this and the next function are conflicting - do we pass objects or JSON into the helper function?
-		var answerDesc = new RTCSessionDescription(answerJSO);
-		sRTC.handleAnswerFromPC2(answerDesc);
-	},
 	handleAnswerFromPC2:function(answerDesc) {
 		sRTC.log('log',"Received remote answer: ", answerDesc);
 		sRTC.pc1.setRemoteDescription(new RTCSessionDescription(answerDesc));
