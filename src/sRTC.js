@@ -80,7 +80,6 @@ window.sRTC = {
 			sRTC.handle("datachannelCreated")('pc2');
 			sRTC.dc2.onopen = sRTC.handle('channelConnected');
 			sRTC.dc2.onmessage = function (e) {
-				debugger;
 				if (e.data.size) {
 					sRTC.handle('onerror')('file');
 				} else {
@@ -115,7 +114,6 @@ window.sRTC = {
 			sRTC.handle("datachannelCreated")('pc1');
 			sRTC.dc1.onopen = sRTC.handle('channelConnected');
 			sRTC.dc1.onmessage = function(e) {
-				debugger;
 				console.log('Received message (pc1)', e.data);
 				if (e.data.size) {
 					sRTC.handle('onerror')('file');
