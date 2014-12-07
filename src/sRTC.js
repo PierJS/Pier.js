@@ -179,6 +179,7 @@ window.sRTC = {
 	init:function(configs) {
 		sRTC.pc1 = new RTCPeerConnection(sRTC.cfg, sRTC.con);
 		sRTC.pc2 = new RTCPeerConnection(sRTC.cfg, sRTC.con);
+
 		sRTC.pc1.onicecandidate = sRTC.handle('onicecandidate_pc1');
 		sRTC.pc1.onconnection = sRTC.handle('onconnection');
 		sRTC.pc1.onsignalingstatechange = sRTC.handle('onsignalingstatechange');
