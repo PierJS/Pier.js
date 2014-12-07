@@ -177,9 +177,15 @@ window.sRTC = {
 		sRTC.pc1.setRemoteDescription(new RTCSessionDescription(answerDesc));
 	},
 	init:function(configs) {
+		// configs
+		this.debug = false;
+		for (var i in configs) {
+			this[i] = configs[i];
+		}
+
 		sRTC.pc1 = new RTCPeerConnection(sRTC.cfg, sRTC.con);
 		sRTC.pc2 = new RTCPeerConnection(sRTC.cfg, sRTC.con);
-
+ 
 		sRTC.pc1.onicecandidate = sRTC.handle('onicecandidate_pc1');
 		sRTC.pc1.onconnection = sRTC.handle('onconnection');
 		sRTC.pc1.onsignalingstatechange = sRTC.handle('onsignalingstatechange');
@@ -190,11 +196,5 @@ window.sRTC = {
 		sRTC.pc2.oniceconnectionstatechange = sRTC.handle('oniceconnectionstatechange');
 		sRTC.pc2.onicegatheringstatechange = sRTC.handle('onicegatheringstatechange');
 		sRTC.pc2.ondatachannel = sRTC.handle('ondatachannel');
-
-		// configs
-		this.debug = false;
-		for (var i in configs) {
-			this[i] = configs[i];
-		}
 	}
 }
