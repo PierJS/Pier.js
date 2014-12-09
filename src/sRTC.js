@@ -187,6 +187,7 @@ window.sRTC = {
 		sRTC.pc1.onsignalingstatechange = sRTC.handle('onsignalingstatechange');
 		sRTC.pc1.oniceconnectionstatechange = sRTC.handle('oniceconnectionstatechange');
 		sRTC.pc1.onicegatheringstatechange = sRTC.handle('onicegatheringstatechange');
+		
 		sRTC.pc2.onicecandidate = sRTC.handle('onicecandidate_pc2');
 		sRTC.pc2.onsignalingstatechange = sRTC.handle('onsignalingstatechange');
 		sRTC.pc2.oniceconnectionstatechange = sRTC.handle('oniceconnectionstatechange');
