@@ -1,4 +1,4 @@
 ServerlessRTCLib
 ================
 
-Library for communicating across browsers with serverless RTC 
+Library for communicating across browsers with serverless RTC. Not finished.
