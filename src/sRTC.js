@@ -28,6 +28,13 @@ window.sRTC = {
 		sRTC.activedc.send(JSON.stringify(JSO));
 	},
 	handlers: {
+		offerHandled:[function(answerDesc) {
+			sRTC.log('log',"Created local answer: ", answerDesc);
+			sRTC.pc2.setLocalDescription(new RTCSessionDescription(answerDesc));
+		}],
+		offerNotHandled:[function(re) {
+			sRTC.warn('warn','No create answer', re);
+		}],
 		onreceiveJSON:[function(json) {
 			sRTC.log('log','Message received!');
 			sRTC.log('log',json);
@@ -71,11 +78,13 @@ window.sRTC = {
 		onconnection:[function(){
 			sRTC.log('log',"Connected to datachannel!");
 		}],
-		localOfferCreated:[function(a){
-			sRTC.log('log','Created offer: ', a)
+		localOfferCreated:[function(desc) {
+			sRTC.pc1.setLocalDescription(desc, function(){});
+			sRTC.log('log',"Created local offer", desc);
+			sRTC.handle('localOfferCreated')(desc);
 		}],
-		localOfferFailed:[function(){
-			sRTC.log('log','Creation of local offer failed!')
+		localOfferFailed:[function(re){
+			sRTC.log('log','Creation of local offer failed!', re)
 		}],
 		datachannelCreated:[function(pc){
 			sRTC.log('log',"Received datachannel (" + pc + ")");
@@ -136,7 +145,6 @@ window.sRTC = {
 						// The first message received from FireFox is literal ASCII 2, we don't bother using this message.
 						return;
 					}
-
 					sRTC.log('log',e);
 					var data = JSON.parse(e.data);
 					if (data.type == 'file') {
@@ -152,21 +160,19 @@ window.sRTC = {
 	},
 	handleOfferFromPC1:function(offerDesc){
 		sRTC.pc2.setRemoteDescription(new RTCSessionDescription(offerDesc));
-		sRTC.pc2.createAnswer(function (answerDesc) {
-			sRTC.log('log',"Created local answer: ", answerDesc);
-			sRTC.pc2.setLocalDescription(new RTCSessionDescription(answerDesc));
-		}, function () { sRTC.log('warn',"No create answer"); });
+		sRTC.pc2.createAnswer(function(){
+			sRTC.handle('offerHandled');
+		}, function (re) {
+			sRTC.handle('offerNotHandled', re)
+		});
 	},
 	createLocalOffer:function() {
 		sRTC.setupDC1()
-		sRTC.pc1.createOffer(function(desc) {
-			sRTC.pc1.setLocalDescription(desc, function(){});
-			sRTC.log('log',"Created local offer", desc);
-			sRTC.handle('localOfferCreated')(desc);
-		}, function() {
-			sRTC.log('warn',"Couldn't create offer");
-			sRTC.handle('localOfferFailed')();
-		})
+		sRTC.pc1.createOffer(function(offer){
+				sRTC.handle('localOfferCreated',offer);
+			}, function(re) {
+				sRTC.handle('localOfferFailed',re);
+			});
 	},
 	answerFromClientReceived:function(answerJSO) {
 		var answerDesc = new RTCSessionDescription(answerJSO);
