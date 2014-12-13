@@ -81,7 +81,6 @@ window.sRTC = {
 		localOfferCreated:[function(desc) {
 			sRTC.pc1.setLocalDescription(desc, function(){});
 			sRTC.log('log',"Created local offer", desc);
-			sRTC.handle('localOfferCreated')(desc);
 		}],
 		localOfferFailed:[function(re){
 			sRTC.log('log','Creation of local offer failed!', re)
