@@ -160,18 +160,18 @@ window.sRTC = {
 	},
 	handleOfferFromPC1:function(offerDesc){
 		sRTC.pc2.setRemoteDescription(new RTCSessionDescription(offerDesc));
-		sRTC.pc2.createAnswer(function(){
-			sRTC.handle('offerHandled');
+		sRTC.pc2.createAnswer(function(ans){
+			sRTC.handle('offerHandled')(ans);
 		}, function (re) {
-			sRTC.handle('offerNotHandled', re)
+			sRTC.handle('offerNotHandled')(re);
 		});
 	},
 	createLocalOffer:function() {
 		sRTC.setupDC1()
 		sRTC.pc1.createOffer(function(offer){
-				sRTC.handle('localOfferCreated',offer);
+				sRTC.handle('localOfferCreated')(offer);
 			}, function(re) {
-				sRTC.handle('localOfferFailed',re);
+				sRTC.handle('localOfferFailed')(re);
 			});
 	},
 	answerFromClientReceived:function(answerJSO) {
